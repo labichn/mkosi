@@ -1745,8 +1745,8 @@ def prepare_tree(state: MkosiState, cached: bool) -> None:
                 root_home(state).joinpath("build").mkdir(0o755)
 
         if state.config.netdev and not state.do_run_build_script:
-            state.root.joinpath("etc/systemd").mkdir(mode=0o755)
-            state.root.joinpath("etc/systemd/network").mkdir(mode=0o755)
+            state.root.joinpath("etc/systemd").mkdir(mode=0o755, exist_ok=True)
+            state.root.joinpath("etc/systemd/network").mkdir(mode=0o755, exist_ok=True)
 
 
 def disable_pam_securetty(root: Path) -> None:
