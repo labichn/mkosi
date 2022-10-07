@@ -619,6 +619,10 @@ class MkosiState:
             self.environment['IMAGE_VERSION'] = self.config.image_version
 
     @property
+    def base(self) -> Path:
+        return self.workspace / "base"
+
+    @property
     def root(self) -> Path:
         return self.workspace / "root"
 

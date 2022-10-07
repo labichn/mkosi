@@ -990,21 +990,23 @@ def attach_image_loopback(image: Optional[BinaryIO], table: Optional[PartitionTa
 
 
 @contextlib.contextmanager
-def attach_base_image(base_image: Optional[Path], table: Optional[PartitionTable]) -> Iterator[Optional[Path]]:
+def attach_base_image(state: MkosiState) -> Iterator[Optional[Path]]:
     """Context manager that attaches/detaches the base image directory or device"""
 
-    if base_image is None:
+    if state.config.base_image is None:
         yield None
         return
 
-    with complete_step(f"Using {base_image} as the base image"):
-        if base_image.is_dir():
-            yield base_image
+    with complete_step(f"Using {state.config.base_image} as the base image"):
+        if state.config.base_image.is_dir():
+            yield state.config.base_image
         else:
-            with base_image.open('rb') as f, \
-                 attach_image_loopback(f, table) as loopdev:
-
-                yield loopdev
+            baseroot = state.base
+            try:
+                run(["systemd-dissect", "--read-only", "-M", state.config.base_image, baseroot])
+                yield baseroot
+            finally:
+                run(["systemd-dissect", "--umount", baseroot])
 
 
 def prepare_swap(state: MkosiState, loopdev: Optional[Path], cached: bool) -> None:
@@ -7208,7 +7210,7 @@ def build_image(
     else:
         raw = create_image(state)
 
-    with attach_base_image(state.config.base_image, state.partition_table) as base_image, \
+    with attach_base_image(state) as base_image, \
          attach_image_loopback(raw, state.partition_table) as loopdev, \
          set_umask(0o022):
 
