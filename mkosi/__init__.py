@@ -2617,9 +2617,8 @@ def install_debian_or_ubuntu(state: MkosiState) -> None:
         # Don't ship dpkg config files in extensions, they belong with dpkg in the base image.
         dpkg_nodoc_conf.unlink() # type: ignore
 
-    if state.config.base_image is None:
-        # Debian still has pam_securetty module enabled, disable it in the base image.
-        disable_pam_securetty(state.root)
+    # Debian still has pam_securetty module enabled, disable it.
+    disable_pam_securetty(state.root)
 
     if (state.config.distribution == Distribution.debian and "systemd" in extra_packages and
             ("systemd-resolved" not in extra_packages)):
